@@ -51,9 +51,12 @@ add_subdirectory(${GLFW_SOURCE_DIR})
 # rapidjson #
 #-----------#
 
+set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
 set(RAPIDJSON_BUILD_DOC OFF)
 set(RAPIDJSON_BUILD_EXAMPLES OFF)
 set(RAPIDJSON_BUILD_TESTS OFF)
+set(BUILD_GTEST OFF)
+set(RAPIDJSON_BUILD_THIRDPARTY_GTEST OFF)
 set(RAPIDJSON_BUILD_CXX17 ON)
 add_subdirectory(third_party/rapidjson)
 
