@@ -14,7 +14,14 @@
 #include "Curl.h"
 #include "parse_json_utils.h"
 
-Client::Client()
+#include "Text.h"
+
+Client::Client(unsigned int width, unsigned int height)
+	: verbose_(false),
+	  width_(width), height_(height),
+	  cursorX_(-1), cursorY_(-1),
+	  currentContainer_(containers_.end()),
+	  text_(nullptr)
 {
 
 }
@@ -29,12 +36,67 @@ void Client::init()
 	auto home_json_data = std::make_unique<std::string>();
 	Curl::fetch(home_json_url.c_str(), home_json_data);
 	parse_json(home_json_data);
+
+	text_ = new Text(width_, height_);
+    text_->Load(font_path("Antonio-Regular.ttf"), 24);
+}
+
+void Client::moveCursor(int key)
+{
+	if (cursorX_ == -1 && cursorY_ == -1) {
+		// first movement, set to (0,0)
+		cursorX_ = cursorY_ = 0;
+		currentContainer_ = containers_.begin();
+	} else
+		switch (key) {
+		case GLFW_KEY_LEFT:
+			// Disallow negative
+			if (cursorX_ > 0)
+				cursorX_--;
+			break;
+		case GLFW_KEY_RIGHT:
+			if (cursorX_ < maxCursorX_ - 1)
+				cursorX_++;
+			break;
+		case GLFW_KEY_UP:
+			// Disallow negative
+			if (cursorY_ > 0)
+				cursorY_--;
+			else if (currentContainer_ != containers_.begin())
+				currentContainer_--;
+			break;
+		case GLFW_KEY_DOWN:
+			if (cursorY_ < maxCursorY_ - 1)
+				cursorY_++;
+			else if (currentContainer_ < containers_.end())
+				currentContainer_++;
+			break;
+		default:
+			break;
+		}
 }
 
 void Client::draw()
 {
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
+
+    int posCursorY = 0;
+    glm::vec2 tpos(0.f, 0.f);
+#if 1
+    for (std::vector<Container>::iterator ptr = currentContainer_;
+    		ptr != containers_.end(); ptr++) {
+    	text_->RenderText(ptr->name(), tpos.x, tpos.y,
+        		(posCursorY++ == cursorY_) ? 1.2f : 1.0f);
+        tpos.y += height_ / maxCursorY_;
+    }
+#else
+    for (auto container : containers_) {
+        text_->RenderText(container.name(), tpos.x, tpos.y,
+        		(posCursorY++ == cursorY_) ? 1.2f : 1.0f);
+        tpos.y += height_ / maxCursorY_;
+    }
+#endif
 }
 
 int Client::read_json(const char *filename, std::unique_ptr<std::string> &json_data)
@@ -82,16 +144,27 @@ void Client::parse_json(const std::unique_ptr<std::string> &json_data)
 
 	const rapidjson::Value &containers = doc["data"]["StandardCollection"]["containers"];
 	if (containers.IsArray()) {
-		std::cout << "Found " << containers.Size() << " containers" << std::endl;
+		if (verbose_)
+			std::cout << "Found " << containers.Size() << " containers" << std::endl;
 
 		for (rapidjson::SizeType i = 0; i < containers.Size(); ++i) {
 
 			const rapidjson::Value &container = containers[i];
-			std::cout << container["set"]["text"]["title"]["full"]["set"]["default"]["content"].GetString() << std::endl;
+			Container c;
+			if (container["set"].HasMember("collectionId")) {
+				const rapidjson::Value &collectionId = container["set"]["collectionId"];
+			}
+			c.setName(container["set"]["text"]["title"]["full"]["set"]["default"]["content"].GetString());
+			containers_.push_back(c);
+			if (cursorY_ == -1)
+				currentContainer_ = containers_.begin();
+			if (verbose_)
+				std::cout << container["set"]["text"]["title"]["full"]["set"]["default"]["content"].GetString() << std::endl;
 
 			if (container["set"].HasMember("refId")) {
 				const rapidjson::Value &refId = containers[i]["set"]["refId"];
-				std::cout << " : " << refId.GetString() << std::endl;
+				if (verbose_)
+					std::cout << " : " << refId.GetString() << std::endl;
 
 				// Read or fetch ref json
 				auto ref_json_data = std::make_unique<std::string>();
@@ -101,7 +174,8 @@ void Client::parse_json(const std::unique_ptr<std::string> &json_data)
 				ref_json_path += ".json";
 
 				if (std::filesystem::exists(ref_json_path)) {
-					std::cout << "Reading " << ref_json_path << std::endl;
+					if (verbose_)
+						std::cout << "Reading " << ref_json_path << std::endl;
 					if (read_json(ref_json_path.string().c_str(), ref_json_data))
 						std::cerr << "problem reading" << std::endl;
 				} else {
@@ -109,13 +183,15 @@ void Client::parse_json(const std::unique_ptr<std::string> &json_data)
 					ref_json_url = ref_json_base_url;
 					ref_json_url += refId.GetString();
 					ref_json_url += ".json";
-					std::cout << "Fetching " << ref_json_url << std::endl;
+					if (verbose_)
+						std::cout << "Fetching " << ref_json_url << std::endl;
 					if (Curl::fetch(ref_json_url.c_str(), ref_json_data))
 						std::cerr << "problem fetching" << std::endl;
 				}
 
 				rapidjson::Document ref_doc;
-				std::cout << "ref json data size = " << ref_json_data->size() << std::endl;
+				if (verbose_)
+					std::cout << "ref json data size = " << ref_json_data->size() << std::endl;
 				rapidjson::ParseResult ok = ref_doc.Parse(ref_json_data->c_str());
 				if (ok) {
 					rapidjson::Value ref_items;
@@ -125,9 +201,10 @@ void Client::parse_json(const std::unique_ptr<std::string> &json_data)
 						ref_items = ref_doc["data"]["PersonalizedCuratedSet"]["items"];
 					else if (ref_doc["data"].HasMember("TrendingSet"))
 						ref_items = ref_doc["data"]["TrendingSet"]["items"];
-
-					std::cout << " - Found " << ref_items.Size() << " items" << std::endl;
-					NodePrinter::printItems(ref_items);
+					if (verbose_) {
+						std::cout << " - Found " << ref_items.Size() << " items" << std::endl;
+						NodePrinter::printItems(ref_items);
+					}
 				} else {
 					std::cerr << "JSON parse error (ref): "
 							<< rapidjson::GetParseError_En(ok.Code())
@@ -139,8 +216,10 @@ void Client::parse_json(const std::unique_ptr<std::string> &json_data)
 
 			if (container["set"].HasMember("items")) {
 				const rapidjson::Value &items = container["set"]["items"];
-				std::cout << " - Found " << items.Size() << " items" << std::endl;
-				NodePrinter::printItems(items);
+				if (verbose_) {
+					std::cout << " - Found " << items.Size() << " items" << std::endl;
+					NodePrinter::printItems(items);
+				}
 			}
 		}
 	}

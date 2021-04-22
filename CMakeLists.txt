@@ -86,11 +86,20 @@ set(GLAD_GL "${GLFW_SOURCE_DIR}/deps/glad_gl.c")
 add_executable(cdnc
 	${GLFW_ICON}
 	${GLAD_GL}
+	
 	data_api.h
-	main.cpp
-	Client.cpp
+	
 	Curl.cpp
 	parse_json_utils.cpp
+	
+	ResourceManager.cpp
+	Shader.cpp
+	Text.cpp
+	Texture.cpp
+	
+	main.cpp
+	Client.cpp
+	Container.cpp
 )
 
 target_include_directories(cdnc PRIVATE ${GLM_SOURCE_DIR})

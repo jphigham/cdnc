@@ -6,6 +6,11 @@
 
 #include "Client.h"
 
+const unsigned ww(1280);
+const unsigned wh(720);
+
+Client client(ww, wh);
+
 void glfw_error_callback(int error, const char* description)
 {
   std::cerr << "Error: " << description << std::endl;
@@ -14,11 +19,19 @@ void glfw_error_callback(int error, const char* description)
 static void glfw_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
     if (action == GLFW_PRESS && key == GLFW_KEY_ESCAPE)
-        glfwSetWindowShouldClose(window, GLFW_TRUE);
+		glfwSetWindowShouldClose(window, GLFW_TRUE);
+    else if (action == GLFW_PRESS || action == GLFW_REPEAT)
+    	switch (key) {
+    	case GLFW_KEY_UP:
+    	case GLFW_KEY_DOWN:
+    	case GLFW_KEY_LEFT:
+    	case GLFW_KEY_RIGHT:
+    		client.moveCursor(key);
+    		break;
+    	default:
+    		break;
+    	}
 }
-
-const unsigned ww(1280);
-const unsigned wh(720);
 
 int main(int argc, char **argv)
 {
@@ -30,7 +43,9 @@ int main(int argc, char **argv)
 		return -1;
 
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	glfwWindowHint(GLFW_RESIZABLE, false);
 
 	window = glfwCreateWindow(ww, wh, "Connected Device Native Client", NULL, NULL);
 	if (window == nullptr) {
@@ -48,12 +63,16 @@ int main(int argc, char **argv)
     }
 	glfwSwapInterval(1);
 
-	auto client = std::make_unique<Client>();
-	client->init();
+    glViewport(0, 0, ww, wh);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	// auto client = std::make_unique<Client>(ww, wh);
+	client.init();
 
 	while (!glfwWindowShouldClose(window)) {
 
-		client->draw();
+		client.draw();
 
 		glfwSwapBuffers(window);
 
