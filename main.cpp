@@ -2,6 +2,9 @@
 #include <GLFW/glfw3.h>
 
 #include <iostream>
+#include <memory>
+
+#include "Client.h"
 
 void glfw_error_callback(int error, const char* description)
 {
@@ -38,12 +41,19 @@ int main(int argc, char **argv)
 	glfwSetKeyCallback(window, glfw_key_callback);
 
 	glfwMakeContextCurrent(window);
-	gladLoadGL(glfwGetProcAddress);
+    if (!gladLoadGL(glfwGetProcAddress))
+    {
+        std::cout << "Failed to initialize GLAD" << std::endl;
+        return -1;
+    }
 	glfwSwapInterval(1);
 
+	auto client = std::make_unique<Client>();
+	client->init();
+
 	while (!glfwWindowShouldClose(window)) {
-        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+
+		client->draw();
 
 		glfwSwapBuffers(window);
 

@@ -86,7 +86,11 @@ set(GLAD_GL "${GLFW_SOURCE_DIR}/deps/glad_gl.c")
 add_executable(cdnc
 	${GLFW_ICON}
 	${GLAD_GL}
+	data_api.h
 	main.cpp
+	Client.cpp
+	Curl.cpp
+	parse_json_utils.cpp
 )
 
 target_include_directories(cdnc PRIVATE ${GLM_SOURCE_DIR})
@@ -103,6 +107,9 @@ target_include_directories(cdnc PRIVATE ${CMAKE_BINARY_DIR}/${JPEG_TURBO_SOURCE_
 target_include_directories(cdnc PRIVATE ${FREETYPE_SOURCE_DIR}/include)
 
 target_include_directories(cdnc PRIVATE ${STB_SOURCE_DIR})
+
+configure_file(resource_path.h.in resource_path.h)
+target_include_directories(cdnc PRIVATE ${CMAKE_BINARY_DIR})
 
 target_link_libraries(cdnc
   PUBLIC

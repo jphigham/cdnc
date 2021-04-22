@@ -1,5 +1,7 @@
 # cdnc
 
+Obtain data_api.h separately (ignored by git)
+
 ### Windows:
 
 ```

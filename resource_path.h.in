@@ -1,0 +1,22 @@
+#pragma once
+
+#include <filesystem>
+
+// Generate path to source dir for resource access at run time
+
+static std::filesystem::path source_dir("${CMAKE_SOURCE_DIR}");
+
+static std::filesystem::path json_path(const char *json) {
+	return source_dir / "resources/json" / json;
+}
+static std::filesystem::path shader_path(const char *shader) {
+	return source_dir / "resources/shaders" / shader;
+}
+
+static std::filesystem::path texture_path(const char *texture) {
+	return source_dir / "resources/textures" / texture;
+}
+
+static std::filesystem::path font_path(const char *font) {
+	return source_dir / "resources/fonts" / font;
+}
