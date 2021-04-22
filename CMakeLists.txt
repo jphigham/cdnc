@@ -60,6 +60,19 @@ set(RAPIDJSON_BUILD_THIRDPARTY_GTEST OFF)
 set(RAPIDJSON_BUILD_CXX17 ON)
 add_subdirectory(third_party/rapidjson)
 
+#----------#
+# freetype #
+#----------#
+
+set(FREETYPE_SOURCE_DIR "third_party/freetype")
+add_subdirectory(${FREETYPE_SOURCE_DIR})
+
+#-----#
+# stb #
+#-----#
+
+set(STB_SOURCE_DIR "third_party/stb")
+
 #------#
 # cdnc #
 #------#
@@ -87,6 +100,10 @@ target_include_directories(cdnc PRIVATE third_party/rapidjson/include)
 target_include_directories(cdnc PRIVATE ${JPEG_TURBO_SOURCE_DIR})
 target_include_directories(cdnc PRIVATE ${CMAKE_BINARY_DIR}/${JPEG_TURBO_SOURCE_DIR})
 
+target_include_directories(cdnc PRIVATE ${FREETYPE_SOURCE_DIR}/include)
+
+target_include_directories(cdnc PRIVATE ${STB_SOURCE_DIR})
+
 target_link_libraries(cdnc
   PUBLIC
     # OpenGL::GL
@@ -94,4 +111,5 @@ target_link_libraries(cdnc
     libcurl
 	glfw
 	jpeg-static
+	freetype
 )
