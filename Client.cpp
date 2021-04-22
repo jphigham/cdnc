@@ -38,7 +38,7 @@ void Client::init()
 	parse_json(home_json_data);
 
 	text_ = new Text(width_, height_);
-    text_->Load(font_path("Antonio-Regular.ttf"), 24);
+    text_->Load(font_path("Antonio-Regular.ttf").string(), 24);
 }
 
 void Client::moveCursor(int key)
