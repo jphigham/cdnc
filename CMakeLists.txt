@@ -73,6 +73,12 @@ add_subdirectory(${FREETYPE_SOURCE_DIR})
 
 set(STB_SOURCE_DIR "third_party/stb")
 
+#-------------#
+# LearnOpenGL #
+#-------------#
+
+set(LOGL_SOURCE_DIR "third_party/LearnOpenGL")
+
 #------#
 # cdnc #
 #------#
@@ -93,16 +99,16 @@ add_executable(cdnc
 	parse_json_utils.cpp
 	jpeg.c
 	
-	Image.cpp
-	ResourceManager.cpp
-	Shader.cpp
-	Text.cpp
-	Texture.cpp
-	Tile.cpp
+	${LOGL_SOURCE_DIR}/ResourceManager.cpp
+	${LOGL_SOURCE_DIR}/Shader.cpp
+	${LOGL_SOURCE_DIR}/Text.cpp
+	${LOGL_SOURCE_DIR}/Texture.cpp
+	${LOGL_SOURCE_DIR}/Tile.cpp
 	
 	main.cpp
 	Client.cpp
 	Container.cpp
+	Image.cpp
 	Show.cpp
 )
 
