@@ -75,27 +75,36 @@ void Client::moveCursor(int key)
 		cursorX_ = cursorY_ = 0;
 	} else
 		switch (key) {
-		case GLFW_KEY_LEFT:
-			// Disallow negative
-			if (cursorX_ > 0)
-				cursorX_--;
-			break;
-		case GLFW_KEY_RIGHT:
-			if (cursorX_ < gridWidth_ - 1)
-				cursorX_++;
-			break;
 		case GLFW_KEY_UP:
 			// Disallow negative
 			if (cursorY_ > 0)
 				cursorY_--;
+			// scroll up
 			else if (startContainer_ > 0)
 				startContainer_--;
 			break;
 		case GLFW_KEY_DOWN:
 			if (cursorY_ < gridHeight_ - 1)
 				cursorY_++;
-			else if (startContainer_ < containers_.size())
+			// scroll down
+			else if (startContainer_ < containers_.size() - gridHeight_)
 				startContainer_++;
+			break;
+		case GLFW_KEY_LEFT:
+			// Disallow negative
+			if (cursorX_ > 0)
+				cursorX_--;
+			// scroll current container left
+			else if (containers_[cursorY_ + startContainer_].startShow_ > 0)
+				containers_[cursorY_ + startContainer_].startShow_--;
+			break;
+		case GLFW_KEY_RIGHT:
+			if (cursorX_ < gridWidth_ - 1)
+				cursorX_++;
+			// scroll current container right
+			else if (containers_[cursorY_+ startContainer_].startShow_ < containers_[cursorY_].shows_.size() - gridWidth_)
+				containers_[cursorY_+ startContainer_].startShow_++;
+			break;
 			break;
 		default:
 			break;
