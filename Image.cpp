@@ -6,8 +6,8 @@
 #include "jpeg.h"
 
 Image::Image()
-	// NOTE: size can't be hardcoded
-	: width_(500), height_(281)
+	// NOTE: size shouldn't be hardcoded
+	: width_(500), height_(400)
 {
 	data_ = std::make_unique<unsigned[]>(width_ * height_);
 }
@@ -15,11 +15,6 @@ Image::Image()
 Image::~Image()
 {
 	// std::cout << "Image::~Image(" << std::hex << this << ")" << std::endl;
-}
-
-int Image::fetchJpegFile(const std::string &path)
-{
-	return 0;
 }
 
 int Image::fetchJpegUrl(const std::string &url)

@@ -40,9 +40,8 @@ Client::~Client()
 
 void Client::init()
 {
-	auto home_json_data = std::make_unique<std::string>();
-	Curl::fetch(home_json_url.c_str(), home_json_data);
-	parse_json(home_json_data);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
 
 	ResourceManager::LoadShader(
 			shader_path("tile.vert").string().c_str(),
@@ -59,6 +58,14 @@ void Client::init()
 
     text_ = new Text(width_, height_);
     text_->Load(font_path("Antonio-Regular.ttf").string(), 24);
+	text_->RenderText("Loading...", width_ / 2.f, height_ / 2.f, 1.0f);
+}
+
+void Client::load()
+{
+	auto home_json_data = std::make_unique<std::string>();
+	Curl::fetch(home_json_url.c_str(), home_json_data);
+	parse_json(home_json_data);
 }
 
 void Client::moveCursor(int key)
@@ -100,19 +107,22 @@ void Client::draw()
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    int posCursorY = 0;
     glm::vec2 drawPos(0.f, 0.f);
+    glm::vec2 showOffset(20.f,30.f);
     glm::vec2 showSize = glm::vec2(width_ / gridWidth_, height_ / gridHeight_) * 0.8f;
 
-    for (int c = startContainer_; c < containers_.size(); c++ ) {
+    for (int gy = 0, c = startContainer_; gy < gridHeight_; gy++, c++) {
 
-    	if (drawPos.y < height_) {
+    	if (c < containers_.size()) {
     		text_->RenderText(containers_[c].name(), 0.f, drawPos.y, 1.0f);
 
     		drawPos.x = 0.f;
-    		for (int s = containers_[c].startShow_; s < containers_[c].shows_.size(); s++) {
-    			if (drawPos.x < width_) {
-    				containers_[c].shows_[s].draw(tile_, drawPos + glm::vec2(20.f,30.f), showSize);
+
+    		for (int gx = 0, s = containers_[c].startShow_; gx < gridWidth_; gx++, s++) {
+    			if (s < containers_[c].shows_.size()) {
+    				float showScale = (gy == cursorY_ && gx == cursorX_) ? 1.1f : 1.0f;
+    				glm::vec2 focusOffset = showSize * (showScale - 1.0f) / 2.0f;
+    				containers_[c].shows_[s].draw(tile_, drawPos + showOffset - focusOffset, showSize * showScale);
     			}
     			drawPos.x += width_ / gridWidth_;
     		}

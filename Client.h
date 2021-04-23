@@ -19,6 +19,7 @@ public:
 	Client(unsigned, unsigned);
 	virtual ~Client();
 	void init();
+	void load();
 	void draw();
 	void moveCursor(int);
 private:

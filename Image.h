@@ -10,7 +10,6 @@ public:
 	Image();
 	virtual ~Image();
 
-	int fetchJpegFile(const std::string &);
 	int fetchJpegUrl(const std::string &);
 
 	unsigned int width() { return width_; }
