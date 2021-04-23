@@ -18,12 +18,6 @@ Texture::Texture()
 
 {
     glGenTextures(1, &this->ID);
-	// std::cout << "Texture::Texture(" << std::hex << this << ")" << std::endl;
-}
-
-Texture::~Texture()
-{
-	// std::cout << "Texture::~Texture(" << std::hex << this << ")" << std::endl;
 }
 
 void Texture::Generate(unsigned int width, unsigned int height, unsigned char* data)

@@ -29,7 +29,6 @@ public:
     unsigned int Filter_Max; // filtering mode if texture pixels > screen pixels
     // constructor (sets default texture modes)
     Texture();
-    virtual ~Texture();
     // generates texture from image data
     void Generate(unsigned int width, unsigned int height, unsigned char* data);
     // binds the texture as the current active GL_TEXTURE_2D texture object

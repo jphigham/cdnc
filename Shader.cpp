@@ -10,16 +10,6 @@
 
 #include <iostream>
 
-Shader::Shader()
-{
-	// std::cout << "Shader::Shader(" << std::hex << this << ")" << std::endl;
-}
-
-Shader::~Shader()
-{
-	// std::cout << "Shader::~Shader(" << std::hex << this << ")" << std::endl;
-}
-
 Shader &Shader::Use()
 {
     glUseProgram(this->ID);

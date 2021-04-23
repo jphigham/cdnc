@@ -47,5 +47,4 @@ private:
     static Shader    loadShaderFromMemory(const char *vShaderFile, const char *fShaderFile, const char *gShaderFile = nullptr);
     // loads a single texture from file
     static Texture loadTextureFromFile(const char *file, bool alpha);
-    static Texture loadTextureFromMem(const char *url, bool alpha);
 };
