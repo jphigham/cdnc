@@ -6,6 +6,7 @@
 #include <fstream>
 #include <iostream>
 
+#include <rapidjson/document.h>
 #include <rapidjson/error/en.h>
 
 #include <glad/gl.h>
@@ -14,13 +15,17 @@
 #include "Curl.h"
 #include "parse_json_utils.h"
 
+#include "ResourceManager.h"
+#include "Show.h"
 #include "Text.h"
+#include "Tile.h"
 
 Client::Client(unsigned int width, unsigned int height)
 	: verbose_(false),
 	  width_(width), height_(height),
 	  cursorX_(-1), cursorY_(-1),
-	  currentContainer_(containers_.end()),
+	  startContainer_(0),
+	  tile_(nullptr),
 	  text_(nullptr)
 {
 
@@ -28,7 +33,9 @@ Client::Client(unsigned int width, unsigned int height)
 
 Client::~Client()
 {
-
+	delete tile_;
+	delete text_;
+	containers_.clear();
 }
 
 void Client::init()
@@ -37,7 +44,20 @@ void Client::init()
 	Curl::fetch(home_json_url.c_str(), home_json_data);
 	parse_json(home_json_data);
 
-	text_ = new Text(width_, height_);
+	ResourceManager::LoadShader(
+			shader_path("tile.vert").string().c_str(),
+			shader_path("tile.frag").string().c_str(),
+			nullptr, "tile");
+
+	glm::mat4 projection = glm::ortho(0.0f,
+    	static_cast<float>(width_), static_cast<float>(height_),
+		0.0f, -1.0f, 1.0f);
+    ResourceManager::GetShader("tile").Use().SetInteger("tile", 0);
+    ResourceManager::GetShader("tile").SetMatrix4("projection", projection);
+
+    tile_ = new Tile(ResourceManager::GetShader("tile"));
+
+    text_ = new Text(width_, height_);
     text_->Load(font_path("Antonio-Regular.ttf").string(), 24);
 }
 
@@ -46,7 +66,6 @@ void Client::moveCursor(int key)
 	if (cursorX_ == -1 && cursorY_ == -1) {
 		// first movement, set to (0,0)
 		cursorX_ = cursorY_ = 0;
-		currentContainer_ = containers_.begin();
 	} else
 		switch (key) {
 		case GLFW_KEY_LEFT:
@@ -55,21 +74,21 @@ void Client::moveCursor(int key)
 				cursorX_--;
 			break;
 		case GLFW_KEY_RIGHT:
-			if (cursorX_ < maxCursorX_ - 1)
+			if (cursorX_ < gridWidth_ - 1)
 				cursorX_++;
 			break;
 		case GLFW_KEY_UP:
 			// Disallow negative
 			if (cursorY_ > 0)
 				cursorY_--;
-			else if (currentContainer_ != containers_.begin())
-				currentContainer_--;
+			else if (startContainer_ > 0)
+				startContainer_--;
 			break;
 		case GLFW_KEY_DOWN:
-			if (cursorY_ < maxCursorY_ - 1)
+			if (cursorY_ < gridHeight_ - 1)
 				cursorY_++;
-			else if (currentContainer_ < containers_.end())
-				currentContainer_++;
+			else if (startContainer_ < containers_.size())
+				startContainer_++;
 			break;
 		default:
 			break;
@@ -82,21 +101,25 @@ void Client::draw()
     glClear(GL_COLOR_BUFFER_BIT);
 
     int posCursorY = 0;
-    glm::vec2 tpos(0.f, 0.f);
-#if 1
-    for (std::vector<Container>::iterator ptr = currentContainer_;
-    		ptr != containers_.end(); ptr++) {
-    	text_->RenderText(ptr->name(), tpos.x, tpos.y,
-        		(posCursorY++ == cursorY_) ? 1.2f : 1.0f);
-        tpos.y += height_ / maxCursorY_;
+    glm::vec2 drawPos(0.f, 0.f);
+    glm::vec2 showSize = glm::vec2(width_ / gridWidth_, height_ / gridHeight_) * 0.8f;
+
+    for (int c = startContainer_; c < containers_.size(); c++ ) {
+
+    	if (drawPos.y < height_) {
+    		text_->RenderText(containers_[c].name(), 0.f, drawPos.y, 1.0f);
+
+    		drawPos.x = 0.f;
+    		for (int s = containers_[c].startShow_; s < containers_[c].shows_.size(); s++) {
+    			if (drawPos.x < width_) {
+    				containers_[c].shows_[s].draw(tile_, drawPos + glm::vec2(20.f,30.f), showSize);
+    			}
+    			drawPos.x += width_ / gridWidth_;
+    		}
+
+    		drawPos.y += height_ / gridHeight_;
+    	}
     }
-#else
-    for (auto container : containers_) {
-        text_->RenderText(container.name(), tpos.x, tpos.y,
-        		(posCursorY++ == cursorY_) ? 1.2f : 1.0f);
-        tpos.y += height_ / maxCursorY_;
-    }
-#endif
 }
 
 int Client::read_json(const char *filename, std::unique_ptr<std::string> &json_data)
@@ -115,19 +138,6 @@ int Client::read_json(const char *filename, std::unique_ptr<std::string> &json_d
 	return 0;
 }
 
-void Client::get_json_items(const rapidjson::Value &items)
-{
-	for (rapidjson::SizeType i = 0; i < items.Size(); ++i) {
-		if (items[i]["text"]["title"]["full"].HasMember("series"))
-			std::cout << " [s] " << items[i]["text"]["title"]["full"]["series"]["default"]["content"].GetString() << std::endl;
-		else if (items[i]["text"]["title"]["full"].HasMember("program"))
-			std::cout << " [p] " << items[i]["text"]["title"]["full"]["program"]["default"]["content"].GetString() << std::endl;
-		else if (items[i]["text"]["title"]["full"].HasMember("collection"))
-			std::cout << " [c] " << items[i]["text"]["title"]["full"]["collection"]["default"]["content"].GetString() << std::endl;
-		else
-			std::cout << " [?] " << std::endl;
-	}
-}
 
 void Client::parse_json(const std::unique_ptr<std::string> &json_data)
 {
@@ -150,14 +160,13 @@ void Client::parse_json(const std::unique_ptr<std::string> &json_data)
 		for (rapidjson::SizeType i = 0; i < containers.Size(); ++i) {
 
 			const rapidjson::Value &container = containers[i];
+
 			Container c;
 			if (container["set"].HasMember("collectionId")) {
 				const rapidjson::Value &collectionId = container["set"]["collectionId"];
 			}
 			c.setName(container["set"]["text"]["title"]["full"]["set"]["default"]["content"].GetString());
-			containers_.push_back(c);
-			if (cursorY_ == -1)
-				currentContainer_ = containers_.begin();
+
 			if (verbose_)
 				std::cout << container["set"]["text"]["title"]["full"]["set"]["default"]["content"].GetString() << std::endl;
 
@@ -205,6 +214,7 @@ void Client::parse_json(const std::unique_ptr<std::string> &json_data)
 						std::cout << " - Found " << ref_items.Size() << " items" << std::endl;
 						NodePrinter::printItems(ref_items);
 					}
+					c.get_json_shows(ref_items);
 				} else {
 					std::cerr << "JSON parse error (ref): "
 							<< rapidjson::GetParseError_En(ok.Code())
@@ -220,7 +230,12 @@ void Client::parse_json(const std::unique_ptr<std::string> &json_data)
 					std::cout << " - Found " << items.Size() << " items" << std::endl;
 					NodePrinter::printItems(items);
 				}
+				c.get_json_shows(items);
 			}
+
+			containers_.push_back(c);
+			if (cursorY_ == -1)
+				currentContainer_ = containers_.begin();
 		}
 	}
 }

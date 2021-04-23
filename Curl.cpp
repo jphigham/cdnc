@@ -71,14 +71,14 @@ int fetch_execute(const char *url, CURL *curl)
     curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpCode);
 
     if (res != CURLE_OK) {
-    	std::cerr << "curl_easy_perform() failed: " << curl_easy_strerror(res) << std::endl;
+    	// std::cerr << "curl_easy_perform() failed: " << curl_easy_strerror(res) << std::endl;
     	rc = -1;
     }
 
     curl_easy_cleanup(curl);
 
     if (httpCode != 200) {
-    	std::cerr << "Couldn't GET from " << url << " - exiting" << std::endl;
+    	// std::cerr << "Couldn't GET from " << url << " - exiting" << std::endl;
     	rc = -1;
     }
 

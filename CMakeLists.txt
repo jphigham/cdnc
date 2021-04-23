@@ -91,15 +91,19 @@ add_executable(cdnc
 	
 	Curl.cpp
 	parse_json_utils.cpp
+	jpeg.c
 	
+	Image.cpp
 	ResourceManager.cpp
 	Shader.cpp
 	Text.cpp
 	Texture.cpp
+	Tile.cpp
 	
 	main.cpp
 	Client.cpp
 	Container.cpp
+	Show.cpp
 )
 
 target_include_directories(cdnc PRIVATE ${GLM_SOURCE_DIR})
@@ -116,6 +120,8 @@ target_include_directories(cdnc PRIVATE ${CMAKE_BINARY_DIR}/${JPEG_TURBO_SOURCE_
 target_include_directories(cdnc PRIVATE ${FREETYPE_SOURCE_DIR}/include)
 
 target_include_directories(cdnc PRIVATE ${STB_SOURCE_DIR})
+
+target_include_directories(cdnc PRIVATE ${LOGL_SOURCE_DIR})
 
 configure_file(resource_path.h.in resource_path.h)
 target_include_directories(cdnc PRIVATE ${CMAKE_BINARY_DIR})
