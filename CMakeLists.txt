@@ -4,10 +4,7 @@ project(cdnc LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-if (WIN32)
-  set(OpenGL_GL_PREFERENCE GLVND)
-endif()
-
+set(OpenGL_GL_PREFERENCE GLVND)
 find_package(OpenGL REQUIRED)
 
 if (WIN32)
