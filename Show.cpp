@@ -19,6 +19,16 @@ Show::~Show()
 
 }
 
+void Show::validate()
+{
+	if (masterId_.length() > 64) {
+		auto tmp = masterId_.substr(0, 64);
+		auto pos = url_.find(masterId_);
+		url_.replace(pos, masterId_.length(), tmp);
+		masterId_ = tmp;
+	}
+}
+
 void Show::draw(Tile *tile, glm::vec2 position, glm::vec2 size)
 {
 	if (failedUrl_)

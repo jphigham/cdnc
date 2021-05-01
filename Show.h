@@ -19,6 +19,8 @@ public:
 	void setUrl(const char *url) { url_ = url; }
 	const std::string &url() { return url_; }
 
+	void validate();
+
 	void draw(Tile *, glm::vec2 position, glm::vec2 size);
 
 private:

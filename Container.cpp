@@ -37,6 +37,7 @@ void Container::get_json_shows(const rapidjson::Value &items)
 			show.setMasterId("UNKNOWN");
 		}
 
+		show.validate();
 		shows_.push_back(show);
 	}
 }
