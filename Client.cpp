@@ -40,7 +40,7 @@ Client::~Client()
 
 void Client::init()
 {
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClearColor(0.0f, 0.0f, 0.2f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
 	ResourceManager::LoadShader(
@@ -57,7 +57,7 @@ void Client::init()
     tile_ = new Tile(ResourceManager::GetShader("tile"));
 
     text_ = new Text(width_, height_);
-    text_->Load(font_path("Antonio-Regular.ttf").string(), 24);
+    text_->Load(font_path("DejaVuSans.ttf").string(), textHeight_);
 	text_->RenderText("Loading...", width_ / 2.f, height_ / 2.f, 1.0f);
 }
 
@@ -113,7 +113,7 @@ void Client::moveCursor(int key)
 
 void Client::draw()
 {
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClearColor(0.0f, 0.0f, 0.2f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
     glm::vec2 drawPos(0.f, 0.f);

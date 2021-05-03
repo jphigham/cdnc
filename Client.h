@@ -40,4 +40,5 @@ private:
 
 	const int gridWidth_ = 5;
 	const int gridHeight_ = 4;
+	const unsigned int textHeight_ = 24;
 };
