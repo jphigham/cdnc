@@ -29,7 +29,7 @@ void Show::validate()
 	}
 }
 
-void Show::draw(Tile *tile, glm::vec2 position, glm::vec2 size)
+void Show::draw(Tile *tile, glm::vec2 position, glm::vec2 size, bool drawNormal)
 {
 	if (failedUrl_)
 		return;
@@ -52,6 +52,7 @@ void Show::draw(Tile *tile, glm::vec2 position, glm::vec2 size)
 	} else {
 		// std::cout << "Reusing image for " << name_ << std::endl;
 	}
-
-	tile->Draw(ResourceManager::GetTexture(masterId_), position, size);
+	const glm::vec3 dim(0.3f);
+	const glm::vec3 normal(1.0f);
+	tile->Draw(ResourceManager::GetTexture(masterId_), position, size, 0.f, drawNormal ? normal : dim);
 }

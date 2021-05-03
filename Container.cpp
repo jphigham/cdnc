@@ -3,7 +3,7 @@
 #include <iostream>
 
 Container::Container()
-	: startShow_(0)
+	: showIndex_(0)
 {
 
 }

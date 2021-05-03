@@ -20,6 +20,16 @@ static void glfw_key_callback(GLFWwindow* window, int key, int scancode, int act
 {
     if (action == GLFW_PRESS && key == GLFW_KEY_ESCAPE)
 		glfwSetWindowShouldClose(window, GLFW_TRUE);
+#ifndef NDEBUG
+    else if (action == GLFW_PRESS && key == GLFW_KEY_X)
+    	client.setGridWidth(client.gridWidth() + 1);
+    else if (action == GLFW_PRESS && key == GLFW_KEY_C)
+    	client.setGridWidth(client.gridWidth() - 1);
+    else if (action == GLFW_PRESS && key == GLFW_KEY_Y)
+    	client.setGridHeight(client.gridHeight() + 1);
+    else if (action == GLFW_PRESS && key == GLFW_KEY_U)
+    	client.setGridHeight(client.gridHeight() - 1);
+#endif
     else if (action == GLFW_PRESS || action == GLFW_REPEAT)
     	switch (key) {
     	case GLFW_KEY_UP:

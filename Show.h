@@ -21,7 +21,7 @@ public:
 
 	void validate();
 
-	void draw(Tile *, glm::vec2 position, glm::vec2 size);
+	void draw(Tile *, glm::vec2 position, glm::vec2 size, bool drawNormal = true);
 
 private:
 	std::string name_;

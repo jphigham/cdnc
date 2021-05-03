@@ -22,23 +22,29 @@ public:
 	void load();
 	void draw();
 	void moveCursor(int);
+
+	int gridWidth() const { return gridWidth_; }
+	void setGridWidth(int newGridWidth) { gridWidth_ = newGridWidth; }
+	int gridHeight() const { return gridHeight_; }
+	void setGridHeight(int newGridHeight) { gridHeight_ = newGridHeight; }
 private:
 	int read_json(const char *, std::unique_ptr<std::string> &);
 	void parse_json(const std::unique_ptr<std::string> &);
 
 	bool verbose_;
 
-	unsigned width_, height_;
+	unsigned int width_, height_;
 
 	std::vector<Container> containers_;
 	std::vector<Container>::iterator currentContainer_;
-	unsigned startContainer_;
+	int containerIndex_;
 	int cursorX_, cursorY_;
 
 	Tile *tile_;
 	Text *text_;
 
-	const int gridWidth_ = 5;
-	const int gridHeight_ = 4;
+	int gridWidth_;
+	int gridHeight_;
+
 	const unsigned int textHeight_ = 24;
 };

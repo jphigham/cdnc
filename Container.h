@@ -25,7 +25,7 @@ public:
 	void get_json_shows(const rapidjson::Value &);
 
 	std::vector<Show> shows_;
-	unsigned startShow_;
+	int showIndex_;
 
 private:
 

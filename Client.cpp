@@ -23,8 +23,9 @@
 Client::Client(unsigned int width, unsigned int height)
 	: verbose_(false),
 	  width_(width), height_(height),
+	  gridWidth_(5), gridHeight_(4),
 	  cursorX_(-1), cursorY_(-1),
-	  startContainer_(0),
+	  containerIndex_(0),
 	  tile_(nullptr),
 	  text_(nullptr)
 {
@@ -80,30 +81,30 @@ void Client::moveCursor(int key)
 			if (cursorY_ > 0)
 				cursorY_--;
 			// scroll up
-			else if (startContainer_ > 0)
-				startContainer_--;
+			else if (containerIndex_ > 0)
+				containerIndex_--;
 			break;
 		case GLFW_KEY_DOWN:
 			if (cursorY_ < gridHeight_ - 1)
 				cursorY_++;
 			// scroll down
-			else if (startContainer_ < containers_.size() - gridHeight_)
-				startContainer_++;
+			else if (containerIndex_ < int(containers_.size()) - gridHeight_)
+				containerIndex_++;
 			break;
 		case GLFW_KEY_LEFT:
 			// Disallow negative
 			if (cursorX_ > 0)
 				cursorX_--;
 			// scroll current container left
-			else if (containers_[cursorY_ + startContainer_].startShow_ > 0)
-				containers_[cursorY_ + startContainer_].startShow_--;
+			else if (containers_[cursorY_ + containerIndex_].showIndex_ > 0)
+				containers_[cursorY_ + containerIndex_].showIndex_--;
 			break;
 		case GLFW_KEY_RIGHT:
 			if (cursorX_ < gridWidth_ - 1)
 				cursorX_++;
 			// scroll current container right
-			else if (containers_[cursorY_+ startContainer_].startShow_ < containers_[cursorY_].shows_.size() - gridWidth_)
-				containers_[cursorY_+ startContainer_].startShow_++;
+			else if (containers_[cursorY_+ containerIndex_].showIndex_ < int(containers_[cursorY_].shows_.size()) - gridWidth_)
+				containers_[cursorY_+ containerIndex_].showIndex_++;
 			break;
 			break;
 		default:
@@ -116,27 +117,45 @@ void Client::draw()
     glClearColor(0.0f, 0.0f, 0.2f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    glm::vec2 drawPos(0.f, 0.f);
-    glm::vec2 showOffset(20.f,30.f);
-    glm::vec2 showSize = glm::vec2(width_ / gridWidth_, height_ / gridHeight_) * 0.8f;
+    // grid rectagles for shows
+    glm::vec2 showGridSize = glm::vec2(float(width_) / float(gridWidth_ + 1),
+    		float(height_) / float(gridHeight_ + 1));
+    // show tile size matching window aspect ratio
+    glm::vec2 showSize(showGridSize.x, showGridSize.x * float(height_) / float (width_));
+    // top left show position
+    glm::vec2 cornerPos(showGridSize / 2.f);
+    // loop-controlled drawing position
+    glm::vec2 drawPos = cornerPos;
 
-    for (int gy = 0, c = startContainer_; gy < gridHeight_; gy++, c++) {
+    // loop over grid y range, including off screen
+    for (int gy = -1, c = containerIndex_ - 1; gy <= gridHeight_; gy++, c++) {
 
-    	if (c < containers_.size()) {
-    		text_->RenderText(containers_[c].name(), 0.f, drawPos.y, 1.0f);
+    	drawPos.y = cornerPos.y + (gy * showGridSize.y);
 
-    		drawPos.x = 0.f;
+    	// draw only when when containerIndex_ is within range
+    	if (0 <= c && c < int(containers_.size())) {
 
-    		for (int gx = 0, s = containers_[c].startShow_; gx < gridWidth_; gx++, s++) {
-    			if (s < containers_[c].shows_.size()) {
-    				float showScale = (gy == cursorY_ && gx == cursorX_) ? 1.1f : 1.0f;
-    				glm::vec2 focusOffset = showSize * (showScale - 1.0f) / 2.0f;
-    				containers_[c].shows_[s].draw(tile_, drawPos + showOffset - focusOffset, showSize * showScale);
+    		// loop over x range, including off screen
+    		for (int gx = -1, s = containers_[c].showIndex_ - 1; gx <= gridWidth_; gx++, s++) {
+
+				drawPos.x = cornerPos.x + (gx * showGridSize.x);
+
+				// draw only when showIndex_ is within range
+    			if (0  <= 0 && s < int(containers_[c].shows_.size())) {
+    				// scale up focused show
+    				float showScale = (gy == cursorY_ && gx == cursorX_) ? 1.05f : 1.0f;
+    				glm::vec2 focusOffset = showGridSize * (showScale - 1.0f) / 2.0f;
+
+    				containers_[c].shows_[s].draw(tile_,
+    						drawPos - focusOffset, showSize * showScale * .9f,
+							// normal display for grid area, dim for off screen indicators
+							0 <= gy && gy < gridHeight_ &&
+							0 <= gx && gx < gridWidth_);
     			}
-    			drawPos.x += width_ / gridWidth_;
     		}
 
-    		drawPos.y += height_ / gridHeight_;
+    		if (0 <= gy && gy < gridHeight_)
+    			text_->RenderText(containers_[c].name(), cornerPos.x, drawPos.y - textHeight_, .9f);
     	}
     }
 }
