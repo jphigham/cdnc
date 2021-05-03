@@ -18,19 +18,24 @@ void glfw_error_callback(int error, const char* description)
 
 static void glfw_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-    if (action == GLFW_PRESS && key == GLFW_KEY_ESCAPE)
-		glfwSetWindowShouldClose(window, GLFW_TRUE);
+    if (action == GLFW_PRESS && key == GLFW_KEY_ESCAPE) {
+    	if (client.showModal())
+    		client.setShowModal(false);
+    	else
+    		glfwSetWindowShouldClose(window, GLFW_TRUE);
+    } else if (action == GLFW_PRESS && key == GLFW_KEY_ENTER) {
+    	client.setShowModal(true);
 #ifndef NDEBUG
-    else if (action == GLFW_PRESS && key == GLFW_KEY_X)
+    } else if (action == GLFW_PRESS && key == GLFW_KEY_X) {
     	client.setGridWidth(client.gridWidth() + 1);
-    else if (action == GLFW_PRESS && key == GLFW_KEY_C)
+    } else if (action == GLFW_PRESS && key == GLFW_KEY_C) {
     	client.setGridWidth(client.gridWidth() - 1);
-    else if (action == GLFW_PRESS && key == GLFW_KEY_Y)
+    } else if (action == GLFW_PRESS && key == GLFW_KEY_Y) {
     	client.setGridHeight(client.gridHeight() + 1);
-    else if (action == GLFW_PRESS && key == GLFW_KEY_U)
+    } else if (action == GLFW_PRESS && key == GLFW_KEY_U) {
     	client.setGridHeight(client.gridHeight() - 1);
 #endif
-    else if (action == GLFW_PRESS || action == GLFW_REPEAT)
+    } else if (action == GLFW_PRESS || action == GLFW_REPEAT) {
     	switch (key) {
     	case GLFW_KEY_UP:
     	case GLFW_KEY_DOWN:
@@ -41,6 +46,7 @@ static void glfw_key_callback(GLFWwindow* window, int key, int scancode, int act
     	default:
     		break;
     	}
+    }
 }
 
 int main(int argc, char **argv)

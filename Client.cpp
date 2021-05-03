@@ -21,7 +21,7 @@
 #include "Tile.h"
 
 Client::Client(unsigned int width, unsigned int height)
-	: verbose_(false),
+	: verbose_(false), showModal_(false),
 	  width_(width), height_(height),
 	  gridWidth_(5), gridHeight_(4),
 	  cursorX_(-1), cursorY_(-1),
@@ -112,6 +112,12 @@ void Client::moveCursor(int key)
 		}
 }
 
+void Client::setShowModal(bool showModal )
+{
+	if (cursorX_ != -1 && cursorY_ != -1)
+		showModal_ = showModal;
+}
+
 void Client::draw()
 {
     glClearColor(0.0f, 0.0f, 0.2f, 1.0f);
@@ -157,6 +163,15 @@ void Client::draw()
     		if (0 <= gy && gy < gridHeight_)
     			text_->RenderText(containers_[c].name(), cornerPos.x, drawPos.y - textHeight_, .9f);
     	}
+    }
+
+    if (showModal_) {
+    	float modalScale = 0.8f;
+    	glm::vec2 modalSize(width_, height_);
+    	glm::vec2 modalPos = modalSize * (1.0f - modalScale) / 2.0f;
+    	auto container = containers_[cursorY_ + containerIndex_];
+    	auto show = container.shows_[cursorX_ + container.showIndex_];
+    	show.draw(tile_, modalPos, modalSize * modalScale);
     }
 }
 
