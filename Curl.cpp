@@ -105,7 +105,7 @@ int Curl::fetch(const char *url, const std::filesystem::path &path)
 	return rc;
 }
 
-int Curl::fetch(const char *url, std::unique_ptr<std::string> &url_data)
+int Curl::fetch(const char *url, std::unique_ptr<std::string> &data)
 {
 	CURL *curl = fetch_init();
 	int rc(0);
@@ -113,7 +113,7 @@ int Curl::fetch(const char *url, std::unique_ptr<std::string> &url_data)
 	if (curl != nullptr) {
 		fetch_set(url, curl);
 	    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_string_cb);
-	    curl_easy_setopt(curl, CURLOPT_WRITEDATA, url_data.get());
+	    curl_easy_setopt(curl, CURLOPT_WRITEDATA, data.get());
 	    rc = fetch_execute(url, curl);
 	} else {
 		rc = -1;
@@ -122,14 +122,19 @@ int Curl::fetch(const char *url, std::unique_ptr<std::string> &url_data)
 	return rc;
 }
 
-int Curl::fetch(const char *url, std::unique_ptr<std::vector<char>> &url_data)
+int Curl::fetch(const char *url, std::unique_ptr<std::vector<char>> &data)
 {
 	CURL *curl = fetch_init();
+	int rc(0);
+
 	if (curl != nullptr) {
 		fetch_set(url, curl);
 		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_vector_cb);
-		curl_easy_setopt(curl, CURLOPT_WRITEDATA, url_data.get());
-		fetch_execute(url, curl);
+		curl_easy_setopt(curl, CURLOPT_WRITEDATA, data.get());
+		rc = fetch_execute(url, curl);
+	} else {
+		rc = -1;
 	}
-	return 0;
+
+	return rc;
 }
