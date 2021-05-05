@@ -147,7 +147,7 @@ void Client::draw()
 				drawPos.x = cornerPos.x + (gx * showGridSize.x);
 
 				// draw only when showIndex_ is within range
-    			if (0  <= 0 && s < int(containers_[c].shows_.size())) {
+    			if (0 <= s && s < int(containers_[c].shows_.size())) {
     				// scale up focused show
     				float showScale = (gy == cursorY_ && gx == cursorX_) ? 1.05f : 1.0f;
     				glm::vec2 focusOffset = showGridSize * (showScale - 1.0f) / 2.0f;
