@@ -21,7 +21,8 @@ int Image::fetchJpegUrl(const std::string &url)
 {
 	// NOTE: This should be reused and not reallocated
 	auto jpeg_buffer = std::make_unique<std::vector<char>>();
-	if (Curl::fetch(url.c_str(), jpeg_buffer))
+	Curl curl;
+	if (curl.fetch(url.c_str(), jpeg_buffer))
 		return -1;
 	if (jpeg_read_mem(reinterpret_cast<const unsigned char*>(jpeg_buffer.get()->data()), jpeg_buffer->size(),
 			&width_, &height_,

@@ -65,7 +65,8 @@ void Client::init()
 void Client::load()
 {
 	auto home_json_data = std::make_unique<std::string>();
-	Curl::fetch(home_json_url.c_str(), home_json_data);
+	Curl curl;
+	curl.fetch(home_json_url.c_str(), home_json_data);
 	parse_json(home_json_data);
 }
 
@@ -247,7 +248,8 @@ void Client::parse_json(const std::unique_ptr<std::string> &json_data)
 					ref_json_url += ".json";
 					if (verbose_)
 						std::cout << "Fetching " << ref_json_url << std::endl;
-					if (Curl::fetch(ref_json_url.c_str(), ref_json_data))
+					Curl curl;
+					if (curl.fetch(ref_json_url.c_str(), ref_json_data))
 						std::cerr << "problem fetching" << std::endl;
 				}
 

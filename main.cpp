@@ -1,6 +1,8 @@
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
 
+#include <curl/curl.h>
+
 #include <iostream>
 #include <memory>
 
@@ -51,6 +53,9 @@ static void glfw_key_callback(GLFWwindow* window, int key, int scancode, int act
 
 int main(int argc, char **argv)
 {
+	if (curl_global_init(CURL_GLOBAL_DEFAULT))
+		return -1;
+
 	GLFWwindow *window;
 
 	glfwSetErrorCallback(glfw_error_callback);
@@ -64,7 +69,7 @@ int main(int argc, char **argv)
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_RESIZABLE, false);
 
-	window = glfwCreateWindow(ww, wh, "Connected Device Native Client", NULL, NULL);
+	window = glfwCreateWindow(ww, wh, "Connected Device Native Client", nullptr, nullptr);
 	if (window == nullptr) {
 		glfwTerminate();
 		return -1;
@@ -96,5 +101,6 @@ int main(int argc, char **argv)
 
 	glfwDestroyWindow(window);
 	glfwTerminate();
+    curl_global_cleanup();
 	return 0;
 }

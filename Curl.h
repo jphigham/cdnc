@@ -1,5 +1,7 @@
 #pragma once
 
+#include <curl/curl.h>
+
 #include <filesystem>
 #include <memory>
 #include <string>
@@ -8,10 +10,15 @@
 class Curl
 {
 public:
-	static int fetch(const char *, const std::filesystem::path &);
-	static int fetch(const char *, std::unique_ptr<std::string> &);
-	static int fetch(const char *, std::unique_ptr<std::vector<char>> &);
+	Curl();
+	~Curl();
+	int fetch(const char *, const std::filesystem::path &);
+	int fetch(const char *, std::unique_ptr<std::string> &);
+	int fetch(const char *, std::unique_ptr<std::vector<char>> &);
 private:
-	Curl() {}
+	void fetch_init();
+	void fetch_set(const char *url);
+	int fetch_execute();
+	CURL *curl_;
 };
 
